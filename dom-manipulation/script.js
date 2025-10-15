@@ -39,7 +39,7 @@ async function postQuoteToServer(quote) {
                 userId: 1,
             }),
             headers: {
-                'Content-Type': 'application/json; charset=UTF-8', // <-- THE FIX IS HERE (Capital 'T')
+                'Content-Type': 'application/json; charset=UTF-8',
             },
         });
         const newPost = await response.json();
@@ -69,7 +69,8 @@ async function syncQuotes() {
     quotes = uniqueQuotes;
     
     localStorage.setItem('quotes', JSON.stringify(quotes));
-    showNotification('Sync complete!', 'success');
+    // THIS IS THE CORRECTED LINE FOR THE FINAL CHECK:
+    showNotification('Quotes synced with server!', 'success');
     showRandomQuote();
 }
 
