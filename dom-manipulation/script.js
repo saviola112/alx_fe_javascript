@@ -47,6 +47,7 @@ async function postQuoteToServer(quote) {
         return true;
     } catch (error) {
         console.error('Error posting quote to server:', error);
+        showNotification('Failed to post to server; saved locally.', 'error');
         return false;
     }
 }
@@ -69,7 +70,6 @@ async function syncQuotes() {
     quotes = uniqueQuotes;
     
     localStorage.setItem('quotes', JSON.stringify(quotes));
-    // THIS IS THE CORRECTED LINE FOR THE FINAL CHECK:
     showNotification('Quotes synced with server!', 'success');
     showRandomQuote();
 }
@@ -77,13 +77,31 @@ async function syncQuotes() {
 // --- CORE UI & HELPER FUNCTIONS ---
 
 function showRandomQuote() {
+    // Clear previous content using DOM methods
+    while (quoteDisplay.firstChild) {
+        quoteDisplay.removeChild(quoteDisplay.firstChild);
+    }
+
     if (quotes.length === 0) {
-        quoteDisplay.innerHTML = "<p>No quotes available. Sync with the server or add a new one!</p>";
+        const msg = document.createElement('p');
+        msg.textContent = "No quotes available. Sync with the server or add a new one!";
+        quoteDisplay.appendChild(msg);
         return;
     }
+
     const randomIndex = Math.floor(Math.random() * quotes.length);
     const randomQuote = quotes[randomIndex];
-    quoteDisplay.innerHTML = `<p>"${randomQuote.text}"</p><p><em>- ${randomQuote.category}</em></p>`;
+
+    const quoteText = document.createElement('p');
+    quoteText.textContent = `"${randomQuote.text}"`;
+
+    const quoteCategory = document.createElement('p');
+    const em = document.createElement('em');
+    em.textContent = `- ${randomQuote.category}`;
+    quoteCategory.appendChild(em);
+
+    quoteDisplay.appendChild(quoteText);
+    quoteDisplay.appendChild(quoteCategory);
 }
 
 async function addQuote() {
@@ -101,8 +119,14 @@ async function addQuote() {
     quotes.push(newQuote);
     localStorage.setItem('quotes', JSON.stringify(quotes));
     
+    // Optionally disable the add button while posting
+    const addBtn = document.getElementById('addQuoteBtn');
+    if (addBtn) addBtn.disabled = true;
+
     await postQuoteToServer(newQuote);
-    
+
+    if (addBtn) addBtn.disabled = false;
+
     textInput.value = '';
     categoryInput.value = '';
     showRandomQuote();
@@ -111,12 +135,39 @@ async function addQuote() {
 
 function createAddQuoteForm() {
     const formContainer = document.getElementById('addQuoteForm');
-    formContainer.innerHTML = `
-        <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
-        <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-        <button id="addQuoteBtn">Add Quote</button>
-    `;
-    document.getElementById('addQuoteBtn').addEventListener('click', addQuote);
+
+    // Clear container if anything exists
+    while (formContainer.firstChild) {
+        formContainer.removeChild(formContainer.firstChild);
+    }
+
+    const inputText = document.createElement('input');
+    inputText.id = 'newQuoteText';
+    inputText.type = 'text';
+    inputText.placeholder = 'Enter a new quote';
+
+    const inputCategory = document.createElement('input');
+    inputCategory.id = 'newQuoteCategory';
+    inputCategory.type = 'text';
+    inputCategory.placeholder = 'Enter quote category';
+
+    const addBtn = document.createElement('button');
+    addBtn.id = 'addQuoteBtn';
+    addBtn.type = 'button';
+    addBtn.textContent = 'Add Quote';
+
+    // Append elements to the form container
+    formContainer.appendChild(inputText);
+    formContainer.appendChild(inputCategory);
+    formContainer.appendChild(addBtn);
+
+    // Event listeners
+    addBtn.addEventListener('click', addQuote);
+
+    // Allow pressing Enter in the category input to submit
+    inputCategory.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addQuote();
+    });
 }
 
 function showNotification(message, type = 'info') {
@@ -134,14 +185,19 @@ function showNotification(message, type = 'info') {
 function initializeApp() {
     const localQuotes = localStorage.getItem('quotes');
     if (localQuotes) {
-        quotes = JSON.parse(localQuotes);
+        try {
+            quotes = JSON.parse(localQuotes);
+        } catch (e) {
+            console.warn('Failed to parse local quotes, resetting.', e);
+            quotes = [];
+        }
     }
 
     createAddQuoteForm();
     showRandomQuote();
     
-    newQuoteBtn.addEventListener('click', showRandomQuote);
-    syncButton.addEventListener('click', syncQuotes);
+    if (newQuoteBtn) newQuoteBtn.addEventListener('click', showRandomQuote);
+    if (syncButton) syncButton.addEventListener('click', syncQuotes);
     
     setInterval(syncQuotes, 60000);
 
@@ -149,3 +205,4 @@ function initializeApp() {
 }
 
 initializeApp();
+
