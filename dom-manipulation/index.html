@@ -1,10 +1,8 @@
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Quote Generator (Cloud Sync)</title>
-    <!-- Modern styling for a better user experience -->
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f7f9; margin: 0; }
         main { background: white; padding: 2rem 2.5rem; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 90%; max-width: 650px; text-align: center; position: relative; }
@@ -20,13 +18,13 @@
     <main>
         <h1>Cloud-Synced Quote Generator</h1>
         <div id="quoteDisplay"><!-- Quote will be displayed here --></div>
+
         <button id="newQuote">Show New Quote</button>
         <button id="syncQuotesBtn">Sync with Server</button>
+        <button id="exportQuotesBtn">Export Quotes</button> <!-- ✅ Added -->
 
-        <!-- Form for adding new quotes -->
         <div id="addQuoteForm"></div>
 
-        <!-- Status notification area for server updates -->
         <div id="server-status"></div>
     </main>
 
